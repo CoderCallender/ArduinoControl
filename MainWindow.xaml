@@ -29,26 +29,16 @@
                         </Grid.ColumnDefinitions>
 
                         <Label Grid.Row="0" Content="Port:" FontWeight="Bold" Padding="100,50,0,20"/>
-                        <ComboBox Grid.Row="0" Grid.Column="1" Height="25" Width="200" Margin="20,20,0,0">
-                            <ComboBoxItem>Port 1</ComboBoxItem>
-                            <ComboBoxItem>Port 2</ComboBoxItem>
-                            <ComboBoxItem>Port 3</ComboBoxItem>
-                            <ComboBoxItem>Port 4</ComboBoxItem>
-                            <ComboBoxItem>Port 5</ComboBoxItem>
+                        <ComboBox x:Name="PortCombo" Grid.Row="0" Grid.Column="1" Height="25" Width="200" Margin="20,20,0,0" PreviewMouseLeftButtonDown="PortCombo_PreviewMouseLeftButtonDown">
                         </ComboBox>
 
                         <Label Grid.Row="1" Content="Baud Rate:" FontWeight="Bold" Padding="100,15,0,20"/>
-                        <ComboBox Grid.Row="1" Grid.Column="1" Height="25" Width="200" Margin="20,10,0,150">
-                            <ComboBoxItem>1200</ComboBoxItem>
-                            <ComboBoxItem>2400</ComboBoxItem>
-                            <ComboBoxItem>4800</ComboBoxItem>
-                            <ComboBoxItem>9600</ComboBoxItem>
-                            <ComboBoxItem>19200</ComboBoxItem>
+                        <ComboBox x:Name="BaudCombo" Grid.Row="1" Grid.Column="1" Height="25" Width="200" Margin="20,10,0,150">
                         </ComboBox>
                         
                     </Grid>
 
-                    <Button Content="Connect" Width="200" Height="30"/>
+                    <Button x:Name="ConnectButton"  Content="Connect" Width="200" Height="30" Click="ConnectButton_Click"/>
                 </StackPanel>
                 
             </TabItem>
