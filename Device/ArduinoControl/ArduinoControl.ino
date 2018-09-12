@@ -49,7 +49,7 @@ void loop() {
     inByte = Serial.read();
     if(inByte == 'a')
     {
-      digitalWrite(LED, HIGH);
+      digitalWrite(LED, !digitalRead(LED));
     }
     
   }
