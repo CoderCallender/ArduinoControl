@@ -3,6 +3,8 @@ using System.Windows;
 using System.Windows.Input;
 using System.IO.Ports;
 using System.Diagnostics;
+using System.Timers;
+using System.Windows.Media;
 
 namespace ArduinoControl
 {
@@ -12,8 +14,14 @@ namespace ArduinoControl
     public partial class MainWindow : Window
     {
         //global declaration of the serial port so the whole program can see it
-        SerialPort port;
+        private static SerialPort port;
 
+        //variable for a timer
+        private static Timer CommsTimer;
+
+        private static byte[] ArduinoBuffer = new byte[20]; //buffer to store data from arduino
+
+       
         public MainWindow()
         {
             InitializeComponent();
@@ -95,6 +103,11 @@ namespace ArduinoControl
 
             //Grey out the load button until we have connected
             LoadButton.IsEnabled = false;
+
+            //Pin1Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#F4F4F5");
+
+            
+
         }
 
         private void PortCombo_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -136,8 +149,8 @@ namespace ArduinoControl
                 // port with the selected settings
                 port = new SerialPort(
                   PortCombo.SelectedItem.ToString(), int.Parse(BaudCombo.SelectedItem.ToString()), Parity.None, 8, StopBits.One);
-   
 
+                port.ReadTimeout = 1000; // timeout
                 // Open the port for communications
                 port.Open();
 
@@ -179,9 +192,139 @@ namespace ArduinoControl
         {
             //This code will be run when the user presses the Load button
 
-            //send something to Arduino....
-            port.Write("a");
+            //Tell the device we want to load the port settings
+            port.Write("s");
+
+            //write the data
+            //TODO: is there a better way of doing this?
+            port.Write(convertToIO(Pin1SetupCombo.SelectedItem.ToString()));
+            port.Write(convertToIO(Pin2SetupCombo.SelectedItem.ToString()));
+            port.Write(convertToIO(Pin3SetupCombo.SelectedItem.ToString()));
+            port.Write(convertToIO(Pin4SetupCombo.SelectedItem.ToString()));
+            port.Write(convertToIO(Pin5SetupCombo.SelectedItem.ToString()));
+            port.Write(convertToIO(Pin6SetupCombo.SelectedItem.ToString()));
+            port.Write(convertToIO(Pin7SetupCombo.SelectedItem.ToString()));
+            port.Write(convertToIO(Pin8SetupCombo.SelectedItem.ToString()));
+            port.Write(convertToIO(Pin8SetupCombo.SelectedItem.ToString()));
+            port.Write(convertToIO(Pin10SetupCombo.SelectedItem.ToString()));
+            port.Write(convertToIO(Pin11SetupCombo.SelectedItem.ToString()));
+            port.Write(convertToIO(Pin12SetupCombo.SelectedItem.ToString()));
+            port.Write(convertToIO(Pin13SetupCombo.SelectedItem.ToString()));
         }
         #endregion
+
+        #region Helpers
+        /// <summary>
+        /// Helper to convert what's in the combo box to something useful to the Arduino
+        /// </summary>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        private string convertToIO(string val)
+        {
+
+            //Take the string and convert it to a number
+            if (val == "Output")
+                return "0";
+            else if (val == "Input")
+                return "1";
+            else
+            {
+                MessageBox.Show("Setup Error!");
+                return "1";  //invalid input, default to input
+            }
+                
+        }
+
+        //convert the pins value to a colour for the GUI
+        private string ValueToRGB(byte val)
+        {
+            if (val == 0)
+            {
+                return "#FF0000";   //Red
+            }
+                
+            else if (val == 1)
+            {
+                return "#00FF00";   //Green
+            }
+
+            else
+            {
+                return "#D3D3D3";
+            }
+        
+        }
+        #endregion
+
+        private void SetTimer()
+        {
+           
+            // Create a timer with a two second interval.
+            CommsTimer = new System.Timers.Timer(1000);
+            // Hook up the Elapsed event for the timer. 
+            CommsTimer.Elapsed += OnTimedEvent;
+            CommsTimer.AutoReset = true;
+            CommsTimer.Enabled = true;
+        }
+
+        
+        private void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            //This is where we can read the data every time the timer triggers
+
+            //send a request to device (g for get)
+            port.Write("g");
+
+            try
+            {
+                port.Read(ArduinoBuffer, 0, 13);
+            }
+            catch
+            {
+                //TODO: catch timeout here
+            }
+
+            for(int x = 0; x < 13; x++)
+            {
+                Debug.Print(ArduinoBuffer[x].ToString());
+            }
+
+            //update the GUI
+
+            
+            this.Dispatcher.Invoke(() => Pin1Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[0])));
+            this.Dispatcher.Invoke(() => Pin2Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[1])));
+            this.Dispatcher.Invoke(() => Pin3Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[2])));
+            this.Dispatcher.Invoke(() => Pin4Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[3])));
+            this.Dispatcher.Invoke(() => Pin5Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[4])));
+            this.Dispatcher.Invoke(() => Pin6Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[5])));
+            this.Dispatcher.Invoke(() => Pin7Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[6])));
+            this.Dispatcher.Invoke(() => Pin8Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[7])));
+            this.Dispatcher.Invoke(() => Pin9Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[8])));
+            this.Dispatcher.Invoke(() => Pin10Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[9])));
+            this.Dispatcher.Invoke(() => Pin11Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[10])));
+            this.Dispatcher.Invoke(() => Pin12Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[11])));
+            this.Dispatcher.Invoke(() => Pin13Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[12])));
+
+
+        }
+
+        private void UpdateIndicators()
+        {
+
+        }
+
+        private void RunButton_Click(object sender, RoutedEventArgs e)
+        {
+            //this function will run when the user clicks the run button
+
+            //Start timer so we can read the data from the device
+            SetTimer();
+
+            //Grey out the button, to indicate that we are already doing it
+            RunButton.IsEnabled = false;
+        }
     }
+
+
 }
