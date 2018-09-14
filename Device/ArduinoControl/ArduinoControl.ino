@@ -26,7 +26,7 @@ int secondSensor = 0;   // second analog sensor
 int thirdSensor = 0;    // digital sensor
 int inByte = 0;         // incoming serial byte
 int LED = 13;           //LED is on pin 13?
-int PinState[13];       //Array to hold the values of the pin settings
+static int PinState[14];       //Array to hold the values of the pin settings
 
 void setup() {
   // start serial port at 9600 bps:
@@ -115,6 +115,7 @@ void SendInfo(void)
   {
     //Check if it is an output
     if(PinState[i + 1] == 0)
+ /// if(1)
     {
       //it is, so write back saying so
       Serial.write('x'); // x to indicate that we won't read it
@@ -122,7 +123,9 @@ void SendInfo(void)
     else
     {
       //It is an input, so read the value
-      temp = digitalRead(i + 1);
+    //  temp = '1';
+      temp = (char)digitalRead(i + 1);
+   
       Serial.write(temp);
     }
     

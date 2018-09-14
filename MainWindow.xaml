@@ -192,26 +192,61 @@
                         <Label Grid.Row="5" Grid.Column="2" Content="Pin 13:" Padding="40,10,0,0"/>
 
                         <!-- digital Pin view Indicators, Col 1 -->
-                        <Ellipse x:Name="Pin1Indicator" Grid.Row="0" Grid.Column="1" Fill="Green" Height="25" Width="25" Margin="0,5,100,10"/>
-                        <Ellipse x:Name="Pin2Indicator" Grid.Row="1" Grid.Column="1" Fill="Green" Height="25" Width="25" Margin="0,5,100,10"/>
-                        <Ellipse x:Name="Pin3Indicator" Grid.Row="2" Grid.Column="1" Fill="Red" Height="25" Width="25" Margin="0,5,100,10"/>
+                        <Ellipse x:Name="Pin1Indicator" Grid.Row="0" Grid.Column="1" Fill="LightGray" Height="25" Width="25" Margin="0,5,100,10"/>
+                        <Ellipse x:Name="Pin2Indicator" Grid.Row="1" Grid.Column="1" Fill="LightGray" Height="25" Width="25" Margin="0,5,100,10"/>
+                        <Ellipse x:Name="Pin3Indicator" Grid.Row="2" Grid.Column="1" Fill="LightGray" Height="25" Width="25" Margin="0,5,100,10"/>
                         <Ellipse x:Name="Pin4Indicator" Grid.Row="3" Grid.Column="1" Fill="LightGray" Height="25" Width="25" Margin="0,5,100,10"/>
-                        <Ellipse x:Name="Pin5Indicator" Grid.Row="4" Grid.Column="1" Fill="Green" Height="25" Width="25" Margin="0,5,100,10"/>
-                        <Ellipse x:Name="Pin6Indicator" Grid.Row="5" Grid.Column="1" Fill="Red" Height="25" Width="25" Margin="0,5,100,10"/>
-                        <Ellipse x:Name="Pin7Indicator" Grid.Row="6" Grid.Column="1" Fill="Green" Height="25" Width="25" Margin="0,5,100,10"/>
+                        <Ellipse x:Name="Pin5Indicator" Grid.Row="4" Grid.Column="1" Fill="LightGray" Height="25" Width="25" Margin="0,5,100,10"/>
+                        <Ellipse x:Name="Pin6Indicator" Grid.Row="5" Grid.Column="1" Fill="LightGray" Height="25" Width="25" Margin="0,5,100,10"/>
+                        <Ellipse x:Name="Pin7Indicator" Grid.Row="6" Grid.Column="1" Fill="LightGray" Height="25" Width="25" Margin="0,5,100,10"/>
 
                         <!-- digital Pin view Indicators, Col 3 -->
-                        <Ellipse x:Name="Pin8Indicator" Grid.Row="0" Grid.Column="3" Fill="Green" Height="25" Width="25" Margin="0,5,100,10"/>
-                        <Ellipse x:Name="Pin9Indicator" Grid.Row="1" Grid.Column="3" Fill="Green" Height="25" Width="25" Margin="0,5,100,10"/>
-                        <Ellipse x:Name="Pin10Indicator" Grid.Row="2" Grid.Column="3" Fill="Red" Height="25" Width="25" Margin="0,5,100,10"/>
+                        <Ellipse x:Name="Pin8Indicator" Grid.Row="0" Grid.Column="3" Fill="LightGray" Height="25" Width="25" Margin="0,5,100,10"/>
+                        <Ellipse x:Name="Pin9Indicator" Grid.Row="1" Grid.Column="3" Fill="LightGray" Height="25" Width="25" Margin="0,5,100,10"/>
+                        <Ellipse x:Name="Pin10Indicator" Grid.Row="2" Grid.Column="3" Fill="LightGray" Height="25" Width="25" Margin="0,5,100,10"/>
                         <Ellipse x:Name="Pin11Indicator" Grid.Row="3" Grid.Column="3" Fill="LightGray" Height="25" Width="25" Margin="0,5,100,10"/>
-                        <Ellipse x:Name="Pin12Indicator" Grid.Row="4" Grid.Column="3" Fill="Green" Height="25" Width="25" Margin="0,5,100,10"/>
-                        <Ellipse x:Name="Pin13Indicator" Grid.Row="5" Grid.Column="3" Fill="Red" Height="25" Width="25" Margin="0,5,100,10"/>
+                        <Ellipse x:Name="Pin12Indicator" Grid.Row="4" Grid.Column="3" Fill="LightGray" Height="25" Width="25" Margin="0,5,100,10"/>
+                        <Ellipse x:Name="Pin13Indicator" Grid.Row="5" Grid.Column="3" Fill="LightGray" Height="25" Width="25" Margin="0,5,100,10"/>
                         
                         
                     </Grid>
 
-                    <Button  x:Name="RunButton" Content="Run" Width="150" Height="30" Margin="0,75,0,0" Click="RunButton_Click"/>
+                    <Label Content="Outputs" FontWeight="Bold" FontSize="14" Margin="225,10,30,10"/>
+                    
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+
+                        <Button x:Name="Pin1OutButton" Content="1" Grid.Column="0" Grid.Row="0" Width="50" Height="20" Background="LightGray" Margin="0,5,0,10" Click="Pin1OutButton_Click"/>
+                        <Button x:Name="Pin2OutButton" Content="2" Grid.Column="1" Grid.Row="0" Width="50" Height="20" Background="LightGray" Margin="0,5,0,10" Click="Pin1OutButton_Click"/>
+                        <Button x:Name="Pin3OutButton" Content="3" Grid.Column="2" Grid.Row="0" Width="50" Height="20" Background="LightGray" Margin="0,5,0,10" Click="Pin1OutButton_Click"/>
+                        <Button x:Name="Pin4OutButton" Content="4" Grid.Column="3" Grid.Row="0" Width="50" Height="20" Background="LightGray" Margin="0,5,0,10" Click="Pin1OutButton_Click"/>
+                        <Button x:Name="Pin5OutButton" Content="5" Grid.Column="4" Grid.Row="0" Width="50" Height="20" Background="LightGray" Margin="0,5,0,10" Click="Pin1OutButton_Click"/>
+                        <Button x:Name="Pin6OutButton" Content="6" Grid.Column="5" Grid.Row="0" Width="50" Height="20" Background="LightGray" Margin="0,5,0,10" Click="Pin1OutButton_Click"/>
+                        <Button x:Name="Pin7OutButton" Content="7" Grid.Column="6" Grid.Row="0" Width="50" Height="20" Background="LightGray" Margin="0,5,0,10" Click="Pin1OutButton_Click"/>
+
+                        <Button x:Name="Pin8OutButton" Content="8" Grid.Column="0" Grid.Row="1" Width="50" Height="20" Background="LightGray" Margin="0,5,0,10" Click="Pin1OutButton_Click"/>
+                        <Button x:Name="Pin9OutButton" Content="9" Grid.Column="1" Grid.Row="1" Width="50" Height="20" Background="LightGray" Margin="0,5,0,10" Click="Pin1OutButton_Click"/>
+                        <Button x:Name="Pin10OutButton" Content="10" Grid.Column="2" Grid.Row="1" Width="50" Height="20" Background="LightGray" Margin="0,5,0,10" Click="Pin1OutButton_Click"/>
+                        <Button x:Name="Pin11OutButton" Content="11" Grid.Column="3" Grid.Row="1" Width="50" Height="20" Background="LightGray" Margin="0,5,0,10" Click="Pin1OutButton_Click"/>
+                        <Button x:Name="Pin12OutButton" Content="12" Grid.Column="4" Grid.Row="1" Width="50" Height="20" Background="LightGray" Margin="0,5,0,10" Click="Pin1OutButton_Click"/>
+                        <Button x:Name="Pin13OutButton" Content="13" Grid.Column="5" Grid.Row="1" Width="50" Height="20" Background="LightGray" Margin="0,5,0,10" Click="Pin1OutButton_Click"/>
+                       
+                    </Grid>
+                    
+                    <Button  x:Name="RunButton" Content="Run" Width="150" Height="30" Margin="0,35,0,0" Click="RunButton_Click"/>
 
                 </StackPanel>
             </TabItem>

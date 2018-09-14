@@ -5,6 +5,9 @@ using System.IO.Ports;
 using System.Diagnostics;
 using System.Timers;
 using System.Windows.Media;
+using System.Threading;
+using System.Windows.Shapes;
+using System.Windows.Controls;
 
 namespace ArduinoControl
 {
@@ -16,15 +19,75 @@ namespace ArduinoControl
         //global declaration of the serial port so the whole program can see it
         private static SerialPort port;
 
+        //Array to hold the value of the outputs of the Arduino
+        private static char[] OutputValues;
+
         //variable for a timer
-        private static Timer CommsTimer;
+        private static System.Timers.Timer CommsTimer;
 
         private static byte[] ArduinoBuffer = new byte[20]; //buffer to store data from arduino
 
-       
+        private readonly Ellipse[] pinIndicators;
+        private readonly Button[] OutputButtons;
+        private readonly ComboBox[] PinModeSelections;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            //Create array of type "Ellipse"
+            pinIndicators = new Ellipse[]
+            {
+                Pin1Indicator,
+                Pin2Indicator,
+                Pin3Indicator,
+                Pin4Indicator,
+                Pin5Indicator,
+                Pin6Indicator,
+                Pin7Indicator,
+                Pin8Indicator,
+                Pin9Indicator,
+                Pin10Indicator,
+                Pin11Indicator,
+                Pin12Indicator,
+                Pin13Indicator
+            };
+
+            //Create array of type "Button"
+            OutputButtons= new Button[]
+            {
+                Pin1OutButton,
+                Pin2OutButton,
+                Pin3OutButton,
+                Pin4OutButton,
+                Pin5OutButton,
+                Pin6OutButton,
+                Pin7OutButton,
+                Pin8OutButton,
+                Pin9OutButton,
+                Pin10OutButton,
+                Pin11OutButton,
+                Pin12OutButton,
+                Pin13OutButton
+            };
+
+            //Create array of type "Button"
+            PinModeSelections = new ComboBox[]
+            {
+                Pin1SetupCombo,
+                Pin2SetupCombo,
+                Pin3SetupCombo,
+                Pin4SetupCombo,
+                Pin5SetupCombo,
+                Pin6SetupCombo,
+                Pin7SetupCombo,
+                Pin8SetupCombo,
+                Pin9SetupCombo,
+                Pin10SetupCombo,
+                Pin11SetupCombo,
+                Pin12SetupCombo,
+                Pin13SetupCombo
+            };
 
             //show list of valid com ports
             foreach (string s in SerialPort.GetPortNames())
@@ -99,15 +162,20 @@ namespace ArduinoControl
             Pin13SetupCombo.Items.Add("Input");
             Pin13SetupCombo.SelectedIndex = 0;
 
-            #endregion 
+            #endregion
+
+            #region Output Button Defaults
+            //set the output button defaults
+            for(int i = 0; i < 13; i++)
+            {
+                OutputButtons[i].IsEnabled = false;
+            }
+            #endregion
 
             //Grey out the load button until we have connected
             LoadButton.IsEnabled = false;
 
             //Pin1Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#F4F4F5");
-
-            
-
         }
 
         private void PortCombo_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -210,6 +278,23 @@ namespace ArduinoControl
             port.Write(convertToIO(Pin11SetupCombo.SelectedItem.ToString()));
             port.Write(convertToIO(Pin12SetupCombo.SelectedItem.ToString()));
             port.Write(convertToIO(Pin13SetupCombo.SelectedItem.ToString()));
+
+            //Enable the buttons that are outputs...
+            for(int i = 0; i < 13; i++)
+            {
+                //if the user has said that we want the pin as an output
+                if((string)PinModeSelections[i].SelectedItem == "Output")
+                {
+                    //enable the button that controls that pin
+                    OutputButtons[i].IsEnabled = true;
+                }
+                else
+                {
+                    //else disable it
+                    OutputButtons[i].IsEnabled = false;
+                }
+            }
+
         }
         #endregion
 
@@ -254,13 +339,27 @@ namespace ArduinoControl
             }
         
         }
+
+        private string ToggleButtonColour(string currentVal)
+        {
+            //if it is green, go red
+            if (currentVal == "#FF00FF00")
+            {
+                return "#FF0000";   //Red
+            }
+            //else go green!
+            else
+            {
+                return "#00FF00";   //Green
+            }
+        }
         #endregion
 
         private void SetTimer()
         {
            
             // Create a timer with a two second interval.
-            CommsTimer = new System.Timers.Timer(1000);
+            CommsTimer = new System.Timers.Timer(500);
             // Hook up the Elapsed event for the timer. 
             CommsTimer.Elapsed += OnTimedEvent;
             CommsTimer.AutoReset = true;
@@ -274,7 +373,7 @@ namespace ArduinoControl
 
             //send a request to device (g for get)
             port.Write("g");
-
+            Thread.Sleep(100);
             try
             {
                 port.Read(ArduinoBuffer, 0, 13);
@@ -291,38 +390,67 @@ namespace ArduinoControl
 
             //update the GUI
 
-            
-            this.Dispatcher.Invoke(() => Pin1Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[0])));
-            this.Dispatcher.Invoke(() => Pin2Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[1])));
-            this.Dispatcher.Invoke(() => Pin3Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[2])));
-            this.Dispatcher.Invoke(() => Pin4Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[3])));
-            this.Dispatcher.Invoke(() => Pin5Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[4])));
-            this.Dispatcher.Invoke(() => Pin6Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[5])));
-            this.Dispatcher.Invoke(() => Pin7Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[6])));
-            this.Dispatcher.Invoke(() => Pin8Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[7])));
-            this.Dispatcher.Invoke(() => Pin9Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[8])));
-            this.Dispatcher.Invoke(() => Pin10Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[9])));
-            this.Dispatcher.Invoke(() => Pin11Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[10])));
-            this.Dispatcher.Invoke(() => Pin12Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[11])));
-            this.Dispatcher.Invoke(() => Pin13Indicator.Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[12])));
-
-
-        }
-
-        private void UpdateIndicators()
-        {
-
+            //Dispatcher allows us to update the GUI thread, which runs separately
+            this.Dispatcher.Invoke(() =>
+            {
+                for(var i = 0; i < 13; i++)
+                {
+                    //update the pin indicator 
+                    pinIndicators[i].Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[i]));
+                }
+            });
         }
 
         private void RunButton_Click(object sender, RoutedEventArgs e)
         {
             //this function will run when the user clicks the run button
 
-            //Start timer so we can read the data from the device
-            SetTimer();
+            if((String)RunButton.Content == "Run")
+            {
+                //Start timer so we can read the data from the device
+                SetTimer();
+                RunButton.Content = "Stop";
+            }
 
-            //Grey out the button, to indicate that we are already doing it
-            RunButton.IsEnabled = false;
+            else
+            {
+                CommsTimer.Enabled = false; //stop the timer
+                RunButton.Content = "Run";
+
+                //Dispatcher allows us to update the GUI thread, which runs separately
+                this.Dispatcher.Invoke(() =>
+                {
+                    for (var i = 0; i < 13; i++)
+                    {
+                        //update the pin indicators to all grey
+                        pinIndicators[i].Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#D3D3D3");
+                    }
+                });
+            }
+
+
+
+            
+        }
+
+        private void Pin1OutButton_Click(object sender, RoutedEventArgs e)
+        {
+            //All output button clicks come here...
+
+            //Find out which button was clicked
+            var buttonName = (sender as Button).Name;
+
+            //do what we want with that info
+
+            switch(buttonName)
+            {
+                case "Pin1OutButton":
+                    //change the button colour
+                    this.Dispatcher.Invoke(() => Pin1OutButton.Background = (SolidColorBrush)new BrushConverter().ConvertFromString(ToggleButtonColour(Pin1OutButton.Background.ToString())));
+                    OutputValues[1] = '0';
+                    break;
+            }
+
         }
     }
 
