@@ -59,8 +59,13 @@ void loop() {
         break; 
 
       case 'g':
-        //PC has asked us to run
+        //PC has asked us to get input data
         SendInfo();
+        break;
+
+      case 'o':
+        //PC has asked us to set the outputs
+        SetOutputs();
         break;
     }
     
@@ -129,6 +134,46 @@ void SendInfo(void)
       Serial.write(temp);
     }
     
+  }
+}
+
+void SetOutputs(void)
+{
+  int x;
+  unsigned char BytesReceived = 0;
+  unsigned char DataReceived[13];
+    
+  //get the instructions from the PC
+  //should get all 13 digital ports from PC (should have a timeout later on in dev)
+  while(BytesReceived < 13)
+  {
+    if (Serial.available() > 0)
+    {
+      //put it in an array for now, so we don't miss the next one
+      DataReceived[BytesReceived] = Serial.read();
+
+      //we have received a byte so inc the counter
+      BytesReceived++;
+    }
+  } 
+
+  //now cycle through the list and set the values apropriately
+  for(x = 1; x < 13; x++)
+  {
+    if(DataReceived[x] == '0')
+    {
+      //set the port low
+      digitalWrite(x,LOW);
+    }
+    else if(DataReceived[x] == '1')
+    {
+      //set the port high
+      digitalWrite(x,HIGH);
+    }
+    else
+    {
+      //pin is set to an input, so do nothing
+    }
   }
 }
 

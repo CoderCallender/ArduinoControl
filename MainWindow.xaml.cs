@@ -8,6 +8,7 @@ using System.Windows.Media;
 using System.Threading;
 using System.Windows.Shapes;
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace ArduinoControl
 {
@@ -20,16 +21,18 @@ namespace ArduinoControl
         private static SerialPort port;
 
         //Array to hold the value of the outputs of the Arduino
-        private static char[] OutputValues;
+        private static char[] OutputValues = new char[16];
 
         //variable for a timer
-        private static System.Timers.Timer CommsTimer;
+        private static DispatcherTimer CommsTimer;
 
         private static byte[] ArduinoBuffer = new byte[20]; //buffer to store data from arduino
 
         private readonly Ellipse[] pinIndicators;
         private readonly Button[] OutputButtons;
         private readonly ComboBox[] PinModeSelections;
+
+        private readonly ManualResetEventSlim resetEvent = new ManualResetEventSlim();
 
         public MainWindow()
         {
@@ -273,7 +276,7 @@ namespace ArduinoControl
             port.Write(convertToIO(Pin6SetupCombo.SelectedItem.ToString()));
             port.Write(convertToIO(Pin7SetupCombo.SelectedItem.ToString()));
             port.Write(convertToIO(Pin8SetupCombo.SelectedItem.ToString()));
-            port.Write(convertToIO(Pin8SetupCombo.SelectedItem.ToString()));
+            port.Write(convertToIO(Pin9SetupCombo.SelectedItem.ToString()));
             port.Write(convertToIO(Pin10SetupCombo.SelectedItem.ToString()));
             port.Write(convertToIO(Pin11SetupCombo.SelectedItem.ToString()));
             port.Write(convertToIO(Pin12SetupCombo.SelectedItem.ToString()));
@@ -287,11 +290,13 @@ namespace ArduinoControl
                 {
                     //enable the button that controls that pin
                     OutputButtons[i].IsEnabled = true;
+                    OutputValues[i] = '0'; //default the value to off
                 }
                 else
                 {
                     //else disable it
                     OutputButtons[i].IsEnabled = false;
+                    OutputValues[i] = 'x'; //tell the device we are not using this pin
                 }
             }
 
@@ -340,12 +345,17 @@ namespace ArduinoControl
         
         }
 
+        /// <summary>
+        /// Changes a colour based on its current value
+        /// </summary>
+        /// <param name="currentVal"></param>
+        /// <returns></returns>
         private string ToggleButtonColour(string currentVal)
         {
             //if it is green, go red
             if (currentVal == "#FF00FF00")
             {
-                return "#FF0000";   //Red
+                return "#D3D3D3";   //Grey
             }
             //else go green!
             else
@@ -353,26 +363,54 @@ namespace ArduinoControl
                 return "#00FF00";   //Green
             }
         }
+
+        /// <summary>
+        /// Function to find out what value we should send to the device, based on the button state
+        /// </summary>
+        /// <param name="PressedButton"></param>
+        private char GetPinValue(Button PressedButton)
+        {
+            //find out what the button colour has been set to
+            if (PressedButton.Background.ToString() == "#FF00FF00")
+            {
+                return '1';  //tell the arduino to set this pin high
+            }
+
+            else
+            {
+                return '0'; //tell the arduino to set this pin low
+            }
+        }
+
         #endregion
 
         private void SetTimer()
         {
            
             // Create a timer with a two second interval.
-            CommsTimer = new System.Timers.Timer(500);
+            CommsTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(500), DispatcherPriority.Normal, OnTimedEvent, Dispatcher);
             // Hook up the Elapsed event for the timer. 
-            CommsTimer.Elapsed += OnTimedEvent;
-            CommsTimer.AutoReset = true;
-            CommsTimer.Enabled = true;
+            CommsTimer.IsEnabled = true;
         }
 
         
-        private void OnTimedEvent(Object source, ElapsedEventArgs e)
+        private void OnTimedEvent(Object source, EventArgs e)
         {
             //This is where we can read the data every time the timer triggers
 
             //send a request to device (g for get)
-            port.Write("g");
+            try
+            {
+                port.Write("g");
+            }
+            catch 
+            {
+                CommsTimer.IsEnabled = false; //stop the timer from being called again
+                MessageBox.Show("Error writing to device!\nPlease check connection");
+                return; //exit
+            }
+            
+            //TODO: try and use the port data received event to get rid of wait
             Thread.Sleep(100);
             try
             {
@@ -380,7 +418,9 @@ namespace ArduinoControl
             }
             catch
             {
-                //TODO: catch timeout here
+                CommsTimer.IsEnabled = false;
+                MessageBox.Show("Error reading device!");
+                return; //exit
             }
 
             for(int x = 0; x < 13; x++)
@@ -390,15 +430,14 @@ namespace ArduinoControl
 
             //update the GUI
 
-            //Dispatcher allows us to update the GUI thread, which runs separately
-            this.Dispatcher.Invoke(() =>
-            {
+         
+        
                 for(var i = 0; i < 13; i++)
                 {
                     //update the pin indicator 
                     pinIndicators[i].Fill = (SolidColorBrush)new BrushConverter().ConvertFromString(ValueToRGB(ArduinoBuffer[i]));
                 }
-            });
+           
         }
 
         private void RunButton_Click(object sender, RoutedEventArgs e)
@@ -414,18 +453,19 @@ namespace ArduinoControl
 
             else
             {
-                CommsTimer.Enabled = false; //stop the timer
+                CommsTimer.IsEnabled = false; //stop the timer
                 RunButton.Content = "Run";
 
-                //Dispatcher allows us to update the GUI thread, which runs separately
-                this.Dispatcher.Invoke(() =>
-                {
+              //  Thread.Sleep(600); //wait for longer than the timer to make sure that it won't 
+
+         
                     for (var i = 0; i < 13; i++)
                     {
                         //update the pin indicators to all grey
                         pinIndicators[i].Fill = (SolidColorBrush)new BrushConverter().ConvertFromString("#D3D3D3");
+                        Thread.Sleep(10);
                     }
-                });
+               
             }
 
 
@@ -437,20 +477,85 @@ namespace ArduinoControl
         {
             //All output button clicks come here...
 
-            //Find out which button was clicked
-            var buttonName = (sender as Button).Name;
+            //set a variable that holds all of the buttons info
+            Button PressedButton = sender as Button;
 
-            //do what we want with that info
+            
+            //change the button colour
+            Dispatcher.Invoke(() => PressedButton.Background = (SolidColorBrush)new BrushConverter().ConvertFromString(ToggleButtonColour(PressedButton.Background.ToString())));
 
-            switch(buttonName)
+            //get the value we need to set the relevant pin to (high or low)
+            var pinstate = GetPinValue(PressedButton);
+
+            switch (PressedButton.Name)
             {
                 case "Pin1OutButton":
-                    //change the button colour
-                    this.Dispatcher.Invoke(() => Pin1OutButton.Background = (SolidColorBrush)new BrushConverter().ConvertFromString(ToggleButtonColour(Pin1OutButton.Background.ToString())));
-                    OutputValues[1] = '0';
+                    OutputValues[1] = pinstate;
+                    break;
+
+                case "Pin2OutButton":
+                    OutputValues[2] = pinstate;
+                    break;
+
+                case "Pin3OutButton":
+                    OutputValues[3] = pinstate;
+                    break;
+
+                case "Pin4OutButton":
+                    OutputValues[4] = pinstate;
+                    break;
+
+                case "Pin5OutButton":
+                    OutputValues[5] = pinstate;
+                    break;
+
+                case "Pin6OutButton":
+                    OutputValues[6] = pinstate;
+                    break;
+
+                case "Pin7OutButton":
+                    OutputValues[7] = pinstate;
+                    break;
+
+                case "Pin8OutButton":
+                    OutputValues[8] = pinstate;
+                    break;
+
+                case "Pin9OutButton":
+                    OutputValues[9] = pinstate;
+                    break;
+
+                case "Pin10OutButton":
+                    OutputValues[10] = pinstate;
+                    break;
+
+                case "Pin11OutButton":
+                    OutputValues[11] = pinstate;
+                    break;
+
+                case "Pin12OutButton":
+                    OutputValues[12] = pinstate;
+                    break;
+
+                case "Pin13OutButton":
+                    OutputValues[13] = pinstate;
                     break;
             }
 
+
+            //Stop timer here to avoid comms conflicts
+            CommsTimer.IsEnabled = false;
+
+            port.Write("o");    //tell the device that we want it to prepare to change the outputs
+
+            for(int i = 0; i < OutputValues.Length; i++)
+            {
+                port.Write(OutputValues[i].ToString());
+                Debug.Write(OutputValues[i].ToString());
+            }
+
+            //start the timer again
+            CommsTimer.IsEnabled = true;
         }
     }
 
