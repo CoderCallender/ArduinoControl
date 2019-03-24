@@ -544,7 +544,7 @@ namespace ArduinoControl
 
 
             //Stop timer here to avoid comms conflicts
-            CommsTimer.IsEnabled = false;
+           // CommsTimer.IsEnabled = false;
 
             port.Write("o");    //tell the device that we want it to prepare to change the outputs
 
@@ -555,7 +555,7 @@ namespace ArduinoControl
             }
 
             //start the timer again
-            CommsTimer.IsEnabled = true;
+           // CommsTimer.IsEnabled = true;
         }
     }
 
